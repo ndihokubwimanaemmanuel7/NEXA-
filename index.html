@@ -1,12 +1,367 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NEXA</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXA — Connect</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Arial,sans-serif;
+  background:#f5f7fb;
+  color:#172033;
+}
+header{
+  background:#fff;
+  padding:18px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  box-shadow:0 2px 10px #00000012;
+  position:sticky;
+  top:0;
+  z-index:10;
+}
+.logo{
+  font-size:28px;
+  font-weight:800;
+  letter-spacing:1px;
+}
+.logo span{color:#5b4cff}
+button{
+  border:0;
+  border-radius:12px;
+  padding:12px 18px;
+  font-weight:bold;
+  cursor:pointer;
+}
+.primary{
+  background:#5b4cff;
+  color:white;
+}
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:25px 18px 100px;
+}
+.hero{
+  background:linear-gradient(135deg,#5b4cff,#8b5cf6);
+  color:white;
+  border-radius:25px;
+  padding:35px 25px;
+  margin-bottom:25px;
+}
+.hero h1{font-size:35px;margin-bottom:10px}
+.hero p{opacity:.9;font-size:16px}
+.search{
+  width:100%;
+  padding:15px;
+  border:1px solid #ddd;
+  border-radius:14px;
+  margin-bottom:20px;
+  font-size:16px;
+}
+.card{
+  background:white;
+  border-radius:18px;
+  padding:20px;
+  margin-bottom:15px;
+  box-shadow:0 3px 15px #0000000b;
+}
+.user{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+.avatar{
+  width:55px;
+  height:55px;
+  border-radius:50%;
+  background:#5b4cff;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:21px;
+  font-weight:bold;
+}
+.user h3{margin-bottom:5px}
+.user p{color:#777;font-size:14px}
+.actions{
+  display:flex;
+  gap:10px;
+  margin-top:15px;
+}
+.secondary{
+  background:#eef0ff;
+  color:#4b3ee6;
+}
+nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:white;
+  display:flex;
+  justify-content:space-around;
+  padding:12px 5px;
+  box-shadow:0 -3px 15px #00000012;
+  z-index:20;
+}
+nav button{
+  background:none;
+  color:#666;
+  padding:8px;
+}
+nav button.active{color:#5b4cff}
+.hidden{display:none}
+input,textarea{
+  width:100%;
+  padding:14px;
+  margin:8px 0;
+  border:1px solid #ddd;
+  border-radius:12px;
+  font-size:16px;
+}
+.form button{width:100%;margin-top:10px}
+.center{text-align:center}
+.small{font-size:14px;color:#777;margin-top:10px}
+</style>
 </head>
+
 <body>
-  <h1>Welcome to NEXA 🚀</h1>
-  <p>Connect. Discover. Belong.</p>
+
+<header>
+  <div class="logo">NE<span>XA</span></div>
+  <button class="primary" onclick="showPage('profile')">Profile</button>
+</header>
+
+<div class="container">
+
+  <!-- HOME -->
+  <section id="home">
+    <div class="hero">
+      <h1>Connect with people.</h1>
+      <p>Discover people, ideas and opportunities on NEXA.</p>
+    </div>
+
+    <input
+      class="search"
+      id="search"
+      placeholder="🔍 Search people..."
+      oninput="searchPeople()"
+    >
+
+    <div id="people"></div>
+  </section>
+
+  <!-- LOGIN -->
+  <section id="login" class="hidden">
+    <div class="card form">
+      <h2>Welcome back 👋</h2>
+      <p class="small">Login to your NEXA account.</p>
+
+      <input id="loginEmail" type="email" placeholder="Email">
+      <input id="loginPassword" type="password" placeholder="Password">
+
+      <button class="primary" onclick="login()">Login</button>
+
+      <p class="small center">
+        Don't have an account?
+        <button class="secondary" onclick="showPage('register')">Create one</button>
+      </p>
+    </div>
+  </section>
+
+  <!-- REGISTER -->
+  <section id="register" class="hidden">
+    <div class="card form">
+      <h2>Join NEXA 🚀</h2>
+      <p class="small">Create your free account.</p>
+
+      <input id="regName" placeholder="Full name">
+      <input id="regEmail" type="email" placeholder="Email">
+      <input id="regPassword" type="password" placeholder="Password">
+
+      <button class="primary" onclick="register()">Create Account</button>
+
+      <p class="small center">
+        Already have an account?
+        <button class="secondary" onclick="showPage('login')">Login</button>
+      </p>
+    </div>
+  </section>
+
+  <!-- PROFILE -->
+  <section id="profile" class="hidden">
+    <div class="card">
+      <div class="user">
+        <div class="avatar" id="myAvatar">N</div>
+        <div>
+          <h2 id="myName">NEXA User</h2>
+          <p id="myEmail">Not logged in</p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" onclick="showPage('register')">
+          Join NEXA
+        </button>
+        <button class="secondary" onclick="logout()">
+          Logout
+        </button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<nav>
+  <button class="active" onclick="showPage('home')">🏠<br>Home</button>
+  <button onclick="showPage('login')">💬<br>Login</button>
+  <button onclick="showPage('register')">➕<br>Join</button>
+  <button onclick="showPage('profile')">👤<br>Profile</button>
+</nav>
+
+<script>
+
+const samplePeople = [
+  {name:"Emma", city:"Kigali", bio:"Technology & business"},
+  {name:"Kevin", city:"Musanze", bio:"Student & mathematics"},
+  {name:"Aline", city:"Rubavu", bio:"Design & creativity"},
+  {name:"David", city:"Huye", bio:"Entrepreneur"},
+  {name:"Grace", city:"Kigali", bio:"Education & technology"}
+];
+
+function showPage(page){
+  document.querySelectorAll("section").forEach(s=>{
+    s.classList.add("hidden");
+  });
+
+  document.getElementById(page).classList.remove("hidden");
+
+  window.scrollTo(0,0);
+}
+
+function displayPeople(list=samplePeople){
+  const box=document.getElementById("people");
+
+  if(list.length===0){
+    box.innerHTML='<div class="card center">No people found.</div>';
+    return;
+  }
+
+  box.innerHTML=list.map(person=>`
+    <div class="card">
+      <div class="user">
+        <div class="avatar">
+          ${person.name.charAt(0)}
+        </div>
+
+        <div>
+          <h3>${person.name}</h3>
+          <p>📍 ${person.city}</p>
+          <p>${person.bio}</p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" onclick="connect('${person.name}')">
+          Connect
+        </button>
+        <button class="secondary" onclick="message('${person.name}')">
+          Message
+        </button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function searchPeople(){
+  const value=document.getElementById("search").value.toLowerCase();
+
+  const results=samplePeople.filter(p =>
+    p.name.toLowerCase().includes(value) ||
+    p.city.toLowerCase().includes(value) ||
+    p.bio.toLowerCase().includes(value)
+  );
+
+  displayPeople(results);
+}
+
+function connect(name){
+  alert("Connection request sent to " + name + "!");
+}
+
+function message(name){
+  alert("Messaging " + name + " will be available soon.");
+}
+
+function register(){
+  const name=document.getElementById("regName").value.trim();
+  const email=document.getElementById("regEmail").value.trim();
+  const password=document.getElementById("regPassword").value;
+
+  if(!name || !email || !password){
+    alert("Please fill in all fields.");
+    return;
+  }
+
+  const user={name,email};
+  localStorage.setItem("nexaUser",JSON.stringify(user));
+
+  alert("Welcome to NEXA, " + name + "! 🎉");
+
+  loadUser();
+  showPage("profile");
+}
+
+function login(){
+  const email=document.getElementById("loginEmail").value.trim();
+
+  if(!email){
+    alert("Please enter your email.");
+    return;
+  }
+
+  const user={
+    name:email.split("@")[0],
+    email:email
+  };
+
+  localStorage.setItem("nexaUser",JSON.stringify(user));
+
+  alert("Login successful! 🎉");
+
+  loadUser();
+  showPage("profile");
+}
+
+function logout(){
+  localStorage.removeItem("nexaUser");
+  loadUser();
+  alert("You have logged out.");
+  showPage("home");
+}
+
+function loadUser(){
+  const data=localStorage.getItem("nexaUser");
+
+  if(data){
+    const user=JSON.parse(data);
+
+    document.getElementById("myName").textContent=user.name;
+    document.getElementById("myEmail").textContent=user.email;
+    document.getElementById("myAvatar").textContent=
+      user.name.charAt(0).toUpperCase();
+  }
+}
+
+displayPeople();
+loadUser();
+
+</script>
+
 </body>
 </html>
