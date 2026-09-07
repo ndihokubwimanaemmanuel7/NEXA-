@@ -1,47 +1,525 @@
 <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXA</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+body{
+  font-family:Arial,sans-serif;
+  background:#f5f7fb;
+  color:#172033;
+  padding-bottom:75px;
+}
+
+header{
+  background:white;
+  padding:16px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  box-shadow:0 2px 10px #00000010;
+}
+
+.logo{
+  font-size:28px;
+  font-weight:bold;
+  color:#5b4cff;
+}
+
+nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:#fff;
+  display:flex;
+  justify-content:space-around;
+  padding:9px 4px;
+  box-shadow:0 -2px 12px #00000012;
+  z-index:20;
+}
+
+nav button{
+  border:0;
+  background:none;
+  padding:8px;
+  font-size:14px;
+}
+
+.container{
+  max-width:900px;
+  margin:auto;
+  padding:20px;
+}
+
+.page{
+  display:none;
+}
+
+.page.active{
+  display:block;
+}
+
+.card{
+  background:white;
+  border-radius:18px;
+  padding:20px;
+  margin-bottom:18px;
+  box-shadow:0 4px 18px #0000000d;
+}
+
+h1{
+  font-size:32px;
+  margin-bottom:10px;
+}
+
+h2{
+  margin-bottom:15px;
+}
+
+input,textarea{
+  width:100%;
+  padding:13px;
+  margin:7px 0 12px;
+  border:1px solid #ddd;
+  border-radius:10px;
+  outline:none;
+}
+
+textarea{
+  min-height:100px;
+}
+
+.btn{
+  width:100%;
+  border:0;
+  padding:13px;
+  border-radius:10px;
+  background:#5b4cff;
+  color:white;
+  font-weight:bold;
+}
+
+.form{
+  max-width:500px;
+  margin:20px auto;
+}
+
+.msg{
+  padding:10px;
+  margin-bottom:12px;
+  border-radius:8px;
+}
+
+.error{
+  background:#ffe5e5;
+  color:#a00000;
+}
+
+.success{
+  background:#e5fff0;
+  color:#08783d;
+}
+
+.users{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:15px;
+}
+
+.user{
+  background:white;
+  padding:18px;
+  border-radius:16px;
+  box-shadow:0 4px 15px #0000000d;
+}
+
+.avatar{
+  width:80px;
+  height:80px;
+  border-radius:50%;
+  object-fit:cover;
+  background:#5b4cff;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:28px;
+  font-weight:bold;
+  margin-bottom:12px;
+}
+
+.profile-avatar{
+  width:120px;
+  height:120px;
+}
+
+.chat-box{
+  height:380px;
+  overflow-y:auto;
+  background:#fafafa;
+  border:1px solid #eee;
+  border-radius:12px;
+  padding:15px;
+  margin:15px 0;
+}
+
+.bubble{
+  background:#e8e8ef;
+  padding:10px 13px;
+  border-radius:14px;
+  max-width:75%;
+  margin:7px 0;
+}
+
+.mine{
+  background:#5b4cff;
+  color:white;
+  margin-left:auto;
+}
+
+.chat-users{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding-bottom:8px;
+}
+
+.chat-user{
+  white-space:nowrap;
+  border:0;
+  padding:9px 13px;
+  border-radius:20px;
+  background:#eee;
+}
+
+.selected{
+  background:#5b4cff;
+  color:white;
+}
+
+.center{
+  text-align:center;
+}
+
+.hidden{
+  display:none!important;
+}
+
+small{
+  color:#777;
+}
+
+@media(max-width:600px){
+  .container{
+    padding:12px;
+  }
+
+  h1{
+    font-size:27px;
+  }
+
+  header{
+    padding:14px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">NEXA</div>
+</header>
+
+<div class="container">
+
+<!-- HOME -->
+<section id="home" class="page active">
+
+  <div class="card">
+    <h1>Connect with people.</h1>
+    <p>
+      Discover people, build meaningful connections
+      and chat with others on NEXA.
+    </p>
+  </div>
+
+  <input
+    id="searchInput"
+    placeholder="🔎 Search people..."
+    oninput="searchUsers()"
+  >
+
+  <h2>People on NEXA</h2>
+
+  <div id="users" class="users">
+    <div class="card">Loading...</div>
+  </div>
+
+</section>
 
 
-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;display:flex;justify-content:space-around;padding:9px 4px;box-shadow:0 -2px 12px #00000012;z-index:20}
+<!-- LOGIN -->
+<section id="login" class="page">
 
+  <div class="card form">
+
+    <h2>Welcome back</h2>
+
+    <div id="loginMsg"></div>
+
+    <input
+      id="loginEmail"
+      type="email"
+      placeholder="Email"
+    >
+
+    <input
+      id="loginPassword"
+      type="password"
+      placeholder="Password"
+    >
+
+    <button class="btn" onclick="login()">
+      Login
+    </button>
+
+    <p class="center" style="margin-top:15px">
+      <a href="#" onclick="showPage('forgot')">
+        Forgot password?
+      </a>
+    </p>
+
+  </div>
+
+</section>
+
+
+<!-- REGISTER -->
+<section id="register" class="page">
+
+  <div class="card form">
+
+    <h2>Join NEXA</h2>
+
+    <div id="registerMsg"></div>
+
+    <input
+      id="regName"
+      placeholder="Full name"
+    >
+
+    <input
+      id="regEmail"
+      type="email"
+      placeholder="Email"
+    >
+
+    <input
+      id="regLocation"
+      placeholder="Location"
+    >
+
+    <textarea
+      id="regBio"
+      placeholder="Tell people about yourself"
+    ></textarea>
+
+    <input
+      id="regPassword"
+      type="password"
+      placeholder="Password"
+    >
+
+    <button class="btn" onclick="register()">
+      Create account
+    </button>
+
+  </div>
+
+</section>
+
+
+<!-- FORGOT PASSWORD -->
+<section id="forgot" class="page">
+
+  <div class="card form">
+
+    <h2>Forgot password</h2>
+
+    <div id="forgotMsg"></div>
+
+    <input
+      id="forgotEmail"
+      type="email"
+      placeholder="Your email"
+    >
+
+    <button class="btn" onclick="forgotPassword()">
+      Send reset link
+    </button>
+
+  </div>
+
+</section>
+
+
+<!-- RESET PASSWORD -->
+<section id="reset" class="page">
+
+  <div class="card form">
+
+    <h2>Reset password</h2>
+
+    <div id="resetMsg"></div>
+
+    <input
+      id="newPassword"
+      type="password"
+      placeholder="New password"
+    >
+
+    <input
+      id="confirmPassword"
+      type="password"
+      placeholder="Confirm password"
+    >
+
+    <button class="btn" onclick="resetPassword()">
+      Update password
+    </button>
+
+  </div>
+
+</section>
+
+
+<!-- PROFILE -->
+<section id="profile" class="page">
+
+  <div class="card">
+
+    <h2>My Profile</h2>
+
+    <div id="profileMsg"></div>
+
+    <div id="profileAvatar"></div>
+
+    <label>Profile photo</label>
+
+    <input
+      id="avatarFile"
+      type="file"
+      accept="image/jpeg,image/png,image/webp"
+      onchange="uploadAvatar()"
+    >
+
+    <input
+      id="profileName"
+      placeholder="Name"
+    >
+
+    <input
+      id="profileLocation"
+      placeholder="Location"
+    >
+
+    <textarea
+      id="profileBio"
+      placeholder="Bio"
+    ></textarea>
+
+    <button class="btn" onclick="saveProfile()">
+      Save profile
+    </button>
+
+  </div>
+
+</section>
+
+
+<!-- CHAT -->
+<section id="chat" class="page">
+
+  <div class="card">
+
+    <h2>Chat</h2>
+
+    <div id="chatLoginMessage" class="center">
+      Login to chat with people.
+    </div>
+
+    <div id="chatArea" class="hidden">
+
+      <div id="chatUsers" class="chat-users"></div>
+
+      <div id="chatTitle">
+        Select someone to chat with.
+      </div>
+
+      <div id="messages" class="chat-box"></div>
+
+      <input
+        id="messageInput"
         placeholder="Write a message..."
         onkeydown="if(event.key==='Enter') sendMessage()"
       >
-      <button onclick="sendMessage()">Send</button>
+
+      <button class="btn" onclick="sendMessage()">
+        Send
+      </button>
+
     </div>
 
   </div>
 
 </section>
 
-</main>
+</div>
 
 
+<!-- BOTTOM NAVIGATION -->
 <nav>
 
   <button onclick="showPage('home')">
-    🏠<br>Home
+    🏠 Home
   </button>
 
   <button onclick="showPage('login')">
-    🔐<br>Login
+    🔐 Login
   </button>
 
   <button onclick="showPage('register')">
-    ➕<br>Join
+    ➕ Join
   </button>
 
   <button onclick="showPage('profile')">
-    👤<br>Profile
+    👤 Profile
+  </button>
+
+  <button onclick="showPage('chat')">
+    💬 Chat
+  </button>
+
+  <button id="logoutBtn" onclick="logout()" class="hidden">
+    🚪 Logout
   </button>
 
 </nav>
 
 
 <script>
-
-/* =========================
-   SUPABASE
-========================= */
 
 const SUPABASE_URL =
 "https://rdscqbcgygmytjvygtjc.supabase.co";
@@ -55,69 +533,89 @@ window.supabase.createClient(
   SUPABASE_KEY
 );
 
+let currentUser = null;
+let currentProfile = null;
+let allUsers = [];
+let selectedChatUser = null;
+let messageSubscription = null;
 
-/* =========================
-   PAGE
-========================= */
+
+/* PAGE */
 
 function showPage(page){
 
   document.querySelectorAll(".page")
-    .forEach(x=>x.classList.remove("active"));
+    .forEach(p => p.classList.remove("active"));
 
-  document.getElementById(page)
-    .classList.add("active");
+  const element = document.getElementById(page);
 
-  if(page==="home") loadUsers();
-  if(page==="profile") loadMyProfile();
+  if(element){
+    element.classList.add("active");
+  }
 
-  window.scrollTo(0,0);
+  if(page === "home"){
+    loadUsers();
+  }
+
+  if(page === "profile"){
+    loadMyProfile();
+  }
+
+  if(page === "chat"){
+    setupChat();
+  }
+
 }
 
 
-/* =========================
-   MESSAGE BOX
-========================= */
+/* MESSAGE */
 
-function msg(id,text,type){
+function showMessage(id,text,type="success"){
 
-  const el=document.getElementById(id);
+  const element = document.getElementById(id);
 
-  el.textContent=text;
-  el.className="message "+type;
-  el.style.display="block";
+  if(!element) return;
+
+  element.innerHTML =
+    `<div class="msg ${type}">${escapeHtml(text)}</div>`;
 }
 
 
-/* =========================
-   REGISTER
-========================= */
+function escapeHtml(text){
+
+  const div = document.createElement("div");
+
+  div.textContent = text || "";
+
+  return div.innerHTML;
+}
+
+
+/* REGISTER */
 
 async function register(){
 
-  const name=document.getElementById("name").value.trim();
-  const email=document.getElementById("email").value.trim();
-  const location=document.getElementById("location").value.trim();
-  const bio=document.getElementById("bio").value.trim();
-  const password=document.getElementById("password").value;
+  const name =
+    document.getElementById("regName").value.trim();
+
+  const email =
+    document.getElementById("regEmail").value.trim();
+
+  const location =
+    document.getElementById("regLocation").value.trim();
+
+  const bio =
+    document.getElementById("regBio").value.trim();
+
+  const password =
+    document.getElementById("regPassword").value;
 
   if(!name || !email || !password){
 
-    msg(
+    showMessage(
       "registerMsg",
-      "Please fill in name, email and password.",
-      "err"
-    );
-
-    return;
-  }
-
-  if(password.length<6){
-
-    msg(
-      "registerMsg",
-      "Password must be at least 6 characters.",
-      "err"
+      "Please enter your name, email and password.",
+      "error"
     );
 
     return;
@@ -125,466 +623,1103 @@ async function register(){
 
   const {data,error} =
     await supabaseClient.auth.signUp({
-      email,
-      password
+
+      email:email,
+
+      password:password,
+
+      options:{
+        data:{
+          name:name,
+          location:location,
+          bio:bio
+        },
+
+        emailRedirectTo:
+          window.location.origin +
+          window.location.pathname
+      }
+
     });
 
   if(error){
 
-    msg("registerMsg",error.message,"err");
-    return;
-  }
-
-  if(!data.user){
-
-    msg(
+    showMessage(
       "registerMsg",
-      "Check your email to confirm your account.",
-      "ok"
+      error.message,
+      "error"
     );
 
     return;
   }
 
-  const {error:profileError} =
-    await supabaseClient
-    .from("profiles")
-    .insert({
-      id:data.user.id,
-      name,
-      email,
-      location,
-      bio
-    });
-
-  if(profileError){
-
-    msg(
-      "registerMsg",
-      "Account created but profile failed: "+
-      profileError.message,
-      "err"
-    );
-
-    return;
-  }
-
-  msg(
-    "registerMsg",
-    "Account created successfully! 🎉",
-    "ok"
+  localStorage.setItem(
+    "nexa_pending_profile",
+    JSON.stringify({
+      name:name,
+      email:email,
+      location:location,
+      bio:bio
+    })
   );
 
-  setTimeout(()=>{
-    showPage("profile");
-  },1200);
+  if(data.session && data.user){
+
+    await ensureProfile(data.user);
+
+  }
+
+  showMessage(
+    "registerMsg",
+    "Account created successfully! 🎉"
+  );
+
 }
 
 
-/* =========================
-   LOGIN
-========================= */
+/* PROFILE CREATION */
+
+async function ensureProfile(user){
+
+  if(!user) return;
+
+  let pending = null;
+
+  try{
+
+    pending =
+      JSON.parse(
+        localStorage.getItem(
+          "nexa_pending_profile"
+        )
+      );
+
+  }catch(e){}
+
+  const metadata =
+    user.user_metadata || {};
+
+  const profile = {
+
+    id:user.id,
+
+    name:
+      pending?.name ||
+      metadata.name ||
+      user.email?.split("@")[0] ||
+      "NEXA User",
+
+    email:user.email,
+
+    location:
+      pending?.location ||
+      metadata.location ||
+      "",
+
+    bio:
+      pending?.bio ||
+      metadata.bio ||
+      ""
+
+  };
+
+  const {error} =
+    await supabaseClient
+      .from("profiles")
+      .upsert(
+        profile,
+        {onConflict:"id"}
+      );
+
+  if(!error){
+
+    localStorage.removeItem(
+      "nexa_pending_profile"
+    );
+
+  }
+
+}
+
+
+/* LOGIN */
 
 async function login(){
 
-  const email=document.getElementById("loginEmail").value.trim();
-  const password=document.getElementById("loginPassword").value;
+  const email =
+    document.getElementById("loginEmail")
+      .value.trim();
 
-  if(!email || !password){
+  const password =
+    document.getElementById("loginPassword")
+      .value;
 
-    msg(
+  const {data,error} =
+    await supabaseClient.auth
+      .signInWithPassword({
+        email:email,
+        password:password
+      });
+
+  if(error){
+
+    showMessage(
       "loginMsg",
-      "Enter email and password.",
-      "err"
+      error.message,
+      "error"
     );
 
     return;
   }
 
-  const {error} =
-    await supabaseClient.auth.signInWithPassword({
-      email,
-      password
-    });
+  currentUser = data.user;
 
-  if(error){
+  await ensureProfile(currentUser);
 
-    msg("loginMsg",error.message,"err");
-    return;
-  }
-
-  msg(
+  showMessage(
     "loginMsg",
-    "Login successful! 🎉",
-    "ok"
+    "Login successful! 🎉"
   );
 
-  setTimeout(()=>{
-    showPage("profile");
-  },800);
+  setTimeout(
+    () => showPage("home"),
+    700
+  );
+
 }
 
 
-/* =========================
-   USERS
-========================= */
-
-let profiles=[];
-
-async function loadUsers(){
-
-  const box=document.getElementById("users");
-
-  const {data,error} =
-    await supabaseClient
-    .from("profiles")
-    .select("*")
-    .order("created_at",{ascending:false});
-
-  if(error){
-
-    box.innerHTML=
-      '<div class="empty">Unable to load users.</div>';
-
-    console.error(error);
-    return;
-  }
-
-  profiles=data || [];
-
-  displayUsers(profiles);
-}
-
-
-function displayUsers(list){
-
-  const box=document.getElementById("users");
-
-  if(!list.length){
-
-    box.innerHTML=
-      '<div class="empty">No users have joined NEXA yet.</div>';
-
-    return;
-  }
-
-  box.innerHTML=list.map(user=>{
-
-    const initial=
-      (user.name || "U")
-      .charAt(0)
-      .toUpperCase();
-
-    return `
-
-      <div class="card">
-
-        <div class="user">
-
-          <div class="avatar">${initial}</div>
-
-          <div>
-            <div class="name">
-              ${safe(user.name || "NEXA User")}
-            </div>
-
-            <div class="location">
-              📍 ${safe(user.location || "Unknown")}
-            </div>
-          </div>
-
-        </div>
-
-        <div class="bio">
-          ${safe(user.bio || "NEXA member")}
-        </div>
-
-        <div class="buttons">
-
-          <button
-            class="primary"
-            onclick="openChat('${user.id}','${safeAttr(user.name)}')">
-            💬 Chat
-          </button>
-
-        </div>
-
-      </div>
-
-    `;
-
-  }).join("");
-}
-
-
-/* =========================
-   SEARCH
-========================= */
-
-function searchUsers(){
-
-  const q=
-    document.getElementById("search")
-    .value
-    .toLowerCase()
-    .trim();
-
-  if(!q){
-
-    displayUsers(profiles);
-    return;
-  }
-
-  const result=
-    profiles.filter(user=>
-      (user.name||"").toLowerCase().includes(q) ||
-      (user.location||"").toLowerCase().includes(q) ||
-      (user.bio||"").toLowerCase().includes(q)
-    );
-
-  displayUsers(result);
-}
-
-
-/* =========================
-   MY PROFILE
-========================= */
-
-async function loadMyProfile(){
-
-  const box=document.getElementById("myProfile");
-
-  const {data:{user}} =
-    await supabaseClient.auth.getUser();
-
-  if(!user){
-
-    box.innerHTML=`
-
-      <div class="empty">
-
-        You are not logged in.
-
-        <br><br>
-
-        <button
-          class="primary"
-          onclick="showPage('login')">
-          Login
-        </button>
-
-      </div>
-
-    `;
-
-    return;
-  }
-
-  const {data,error} =
-    await supabaseClient
-    .from("profiles")
-    .select("*")
-    .eq("id",user.id)
-    .single();
-
-  if(error){
-
-    box.innerHTML=
-      '<div class="empty">Profile not found.</div>';
-
-    return;
-  }
-
-  const initial=
-    (data.name||"U")
-    .charAt(0)
-    .toUpperCase();
-
-  box.innerHTML=`
-
-    <div class="profile">
-
-      <div class="bigavatar">${initial}</div>
-
-      <h2>${safe(data.name)}</h2>
-
-      <p>📧 ${safe(data.email||user.email)}</p>
-
-      <p>📍 ${safe(data.location||"Not specified")}</p>
-
-      <p>${safe(data.bio||"No bio yet.")}</p>
-
-      <button class="logout" onclick="logout()">
-        Logout
-      </button>
-
-    </div>
-
-  `;
-}
-
-
-/* =========================
-   LOGOUT
-========================= */
+/* LOGOUT */
 
 async function logout(){
 
   await supabaseClient.auth.signOut();
 
-  showPage("home");
-}
+  currentUser = null;
+  currentProfile = null;
+  selectedChatUser = null;
 
-
-/* =========================
-   CHAT
-========================= */
-
-let currentReceiver=null;
-let currentChannel=null;
-
-
-async function openChat(id,name){
-
-  const {data:{user}} =
-    await supabaseClient.auth.getUser();
-
-  if(!user){
-
-    alert("Please login first.");
-    showPage("login");
-    return;
-  }
-
-  if(user.id===id){
-
-    alert("You cannot chat with yourself.");
-    return;
-  }
-
-  currentReceiver=id;
-
-  document.getElementById("chatUserName").innerHTML=
-    "<b>"+safe(name)+"</b>";
-
-  showPage("chat");
-
-  await loadMessages();
-
-  if(currentChannel){
+  if(messageSubscription){
 
     await supabaseClient
-      .removeChannel(currentChannel);
+      .removeChannel(
+        messageSubscription
+      );
+
+    messageSubscription = null;
   }
 
-  currentChannel=
-    supabaseClient
-    .channel("chat-"+user.id+"-"+id)
-    .on(
-      "postgres_changes",
-      {
-        event:"INSERT",
-        schema:"public",
-        table:"messages"
-      },
-      payload=>{
+  updateNavigation();
 
-        const m=payload.new;
+  showPage("home");
 
-        if(
-          (m.sender_id===user.id &&
-           m.receiver_id===id)
-          ||
-          (m.sender_id===id &&
-           m.receiver_id===user.id)
-        ){
-
-          loadMessages();
-        }
-
-      }
-    )
-    .subscribe();
 }
 
 
-async function loadMessages(){
+/* NAVIGATION */
 
-  const box=
-    document.getElementById("chatMessages");
+function updateNavigation(){
 
-  const {data:{user}} =
-    await supabaseClient.auth.getUser();
+  const logout =
+    document.getElementById("logoutBtn");
 
-  if(!user || !currentReceiver)return;
+  if(currentUser){
+
+    logout.classList.remove("hidden");
+
+  }else{
+
+    logout.classList.add("hidden");
+
+  }
+
+}
+
+
+/* LOAD USERS */
+
+async function loadUsers(){
+
+  const container =
+    document.getElementById("users");
+
+  container.innerHTML =
+    `<div class="card">Loading...</div>`;
 
   const {data,error} =
     await supabaseClient
-    .from("messages")
-    .select("*")
-    .or(
-      `and(sender_id.eq.${user.id},receiver_id.eq.${currentReceiver}),and(sender_id.eq.${currentReceiver},receiver_id.eq.${user.id})`
-    )
-    .order("created_at",{ascending:true});
+      .from("profiles")
+      .select("*")
+      .order(
+        "created_at",
+        {ascending:false}
+      );
 
   if(error){
 
-    box.innerHTML=
-      '<div class="empty">Could not load messages.</div>';
-
-    console.error(error);
-    return;
-  }
-
-  if(!data.length){
-
-    box.innerHTML=
-      '<div class="empty">No messages yet. Say hello! 👋</div>';
+    container.innerHTML =
+      `<div class="card">
+        ${escapeHtml(error.message)}
+      </div>`;
 
     return;
   }
 
-  box.innerHTML=data.map(m=>`
+  allUsers = data || [];
 
-    <div class="bubble ${
-      m.sender_id===user.id ? "mine" : "theirs"
-    }">
-      ${safe(m.message)}
-    </div>
+  renderUsers(allUsers);
 
-  `).join("");
-
-  box.scrollTop=box.scrollHeight;
 }
 
 
-async function sendMessage(){
+/* RENDER USERS */
 
-  const input=document.getElementById("chatInput");
-  const text=input.value.trim();
+function renderUsers(users){
 
-  if(!text || !currentReceiver)return;
+  const container =
+    document.getElementById("users");
 
-  const {data:{user}} =
-    await supabaseClient.auth.getUser();
+  if(!users.length){
 
-  if(!user){
+    container.innerHTML =
+      `<div class="card">
+        No users found yet.
+      </div>`;
 
-    showPage("login");
+    return;
+  }
+
+  container.innerHTML =
+    users.map(user => {
+
+      const initial =
+        (user.name || "U")
+          .charAt(0)
+          .toUpperCase();
+
+      const avatar =
+        user.avatar_url
+
+        ? `<img
+             class="avatar"
+             src="${escapeHtml(user.avatar_url)}"
+           >`
+
+        : `<div class="avatar">
+             ${escapeHtml(initial)}
+           </div>`;
+
+      return `
+
+        <div class="user">
+
+          ${avatar}
+
+          <h3>
+            ${escapeHtml(user.name)}
+          </h3>
+
+          <small>
+            ${escapeHtml(
+              user.location ||
+              "Location not added"
+            )}
+          </small>
+
+          <p style="margin:10px 0">
+            ${escapeHtml(
+              user.bio ||
+              "No bio yet."
+            )}
+          </p>
+
+          ${
+            currentUser &&
+            currentUser.id !== user.id
+
+            ? `<button
+                 class="btn"
+                 onclick="startChat('${user.id}')">
+                 💬 Message
+               </button>`
+
+            : ""
+          }
+
+        </div>
+
+      `;
+
+    }).join("");
+
+}
+
+
+/* SEARCH */
+
+function searchUsers(){
+
+  const query =
+    document.getElementById("searchInput")
+      .value
+      .toLowerCase()
+      .trim();
+
+  if(!query){
+
+    renderUsers(allUsers);
+
+    return;
+  }
+
+  const filtered =
+    allUsers.filter(user =>
+
+      (user.name || "")
+        .toLowerCase()
+        .includes(query)
+
+      ||
+
+      (user.location || "")
+        .toLowerCase()
+        .includes(query)
+
+      ||
+
+      (user.bio || "")
+        .toLowerCase()
+        .includes(query)
+
+    );
+
+  renderUsers(filtered);
+
+}
+
+
+/* LOAD PROFILE */
+
+async function loadMyProfile(){
+
+  if(!currentUser){
+
+    showMessage(
+      "profileMsg",
+      "Please login first.",
+      "error"
+    );
+
+    return;
+  }
+
+  const {data,error} =
+    await supabaseClient
+      .from("profiles")
+      .select("*")
+      .eq("id",currentUser.id)
+      .maybeSingle();
+
+  if(error){
+
+    showMessage(
+      "profileMsg",
+      error.message,
+      "error"
+    );
+
+    return;
+  }
+
+  if(!data){
+
+    await ensureProfile(currentUser);
+
+    return loadMyProfile();
+
+  }
+
+  currentProfile = data;
+
+  document.getElementById(
+    "profileName"
+  ).value = data.name || "";
+
+  document.getElementById(
+    "profileLocation"
+  ).value = data.location || "";
+
+  document.getElementById(
+    "profileBio"
+  ).value = data.bio || "";
+
+  renderProfileAvatar(data);
+
+}
+
+
+/* PROFILE AVATAR */
+
+function renderProfileAvatar(profile){
+
+  const box =
+    document.getElementById(
+      "profileAvatar"
+    );
+
+  if(profile.avatar_url){
+
+    box.innerHTML =
+      `<img
+        class="avatar profile-avatar"
+        src="${escapeHtml(profile.avatar_url)}"
+      >`;
+
+  }else{
+
+    const initial =
+      (profile.name || "U")
+        .charAt(0)
+        .toUpperCase();
+
+    box.innerHTML =
+      `<div class="avatar profile-avatar">
+        ${escapeHtml(initial)}
+      </div>`;
+
+  }
+
+}
+
+
+/* SAVE PROFILE */
+
+async function saveProfile(){
+
+  if(!currentUser){
+
+    showMessage(
+      "profileMsg",
+      "Please login first.",
+      "error"
+    );
+
+    return;
+  }
+
+  const name =
+    document.getElementById(
+      "profileName"
+    ).value.trim();
+
+  const location =
+    document.getElementById(
+      "profileLocation"
+    ).value.trim();
+
+  const bio =
+    document.getElementById(
+      "profileBio"
+    ).value.trim();
+
+  const {data,error} =
+    await supabaseClient
+      .from("profiles")
+      .upsert({
+
+        id:currentUser.id,
+        name:name,
+        email:currentUser.email,
+        location:location,
+        bio:bio
+
+      },{
+        onConflict:"id"
+      })
+      .select()
+      .single();
+
+  if(error){
+
+    showMessage(
+      "profileMsg",
+      error.message,
+      "error"
+    );
+
+    return;
+  }
+
+  currentProfile = data;
+
+  renderProfileAvatar(data);
+
+  showMessage(
+    "profileMsg",
+    "Profile saved successfully! ✅"
+  );
+
+}
+
+
+/* UPLOAD PHOTO */
+
+async function uploadAvatar(){
+
+  if(!currentUser) return;
+
+  const input =
+    document.getElementById(
+      "avatarFile"
+    );
+
+  const file = input.files[0];
+
+  if(!file) return;
+
+  if(file.size > 5 * 1024 * 1024){
+
+    showMessage(
+      "profileMsg",
+      "Image must be smaller than 5 MB.",
+      "error"
+    );
+
+    input.value = "";
+
+    return;
+  }
+
+  const path =
+    currentUser.id + "/avatar";
+
+  const {error} =
+    await supabaseClient
+      .storage
+      .from("avatars")
+      .upload(
+        path,
+        file,
+        {
+          upsert:true,
+          contentType:file.type
+        }
+      );
+
+  if(error){
+
+    showMessage(
+      "profileMsg",
+      error.message,
+      "error"
+    );
+
+    return;
+  }
+
+  const {data} =
+    supabaseClient
+      .storage
+      .from("avatars")
+      .getPublicUrl(path);
+
+  const url =
+    data.publicUrl +
+    "?t=" +
+    Date.now();
+
+  const {error:dbError} =
+    await supabaseClient
+      .from("profiles")
+      .update({
+        avatar_url:url
+      })
+      .eq(
+        "id",
+        currentUser.id
+      );
+
+  if(dbError){
+
+    showMessage(
+      "profileMsg",
+      dbError.message,
+      "error"
+    );
+
+    return;
+  }
+
+  currentProfile.avatar_url = url;
+
+  renderProfileAvatar(
+    currentProfile
+  );
+
+  showMessage(
+    "profileMsg",
+    "Profile photo updated! 📸"
+  );
+
+}
+
+
+/* FORGOT PASSWORD */
+
+async function forgotPassword(){
+
+  const email =
+    document.getElementById(
+      "forgotEmail"
+    ).value.trim();
+
+  if(!email){
+
+    showMessage(
+      "forgotMsg",
+      "Enter your email.",
+      "error"
+    );
+
+    return;
+  }
+
+  const redirect =
+    window.location.origin +
+    window.location.pathname +
+    "#reset";
+
+  const {error} =
+    await supabaseClient.auth
+      .resetPasswordForEmail(
+        email,
+        {
+          redirectTo:redirect
+        }
+      );
+
+  if(error){
+
+    showMessage(
+      "forgotMsg",
+      error.message,
+      "error"
+    );
+
+    return;
+  }
+
+  showMessage(
+    "forgotMsg",
+    "Reset link sent. Check your email."
+  );
+
+}
+
+
+/* RESET PASSWORD */
+
+async function resetPassword(){
+
+  const password =
+    document.getElementById(
+      "newPassword"
+    ).value;
+
+  const confirm =
+    document.getElementById(
+      "confirmPassword"
+    ).value;
+
+  if(password !== confirm){
+
+    showMessage(
+      "resetMsg",
+      "Passwords do not match.",
+      "error"
+    );
+
     return;
   }
 
   const {error} =
+    await supabaseClient.auth
+      .updateUser({
+        password:password
+      });
+
+  if(error){
+
+    showMessage(
+      "resetMsg",
+      error.message,
+      "error"
+    );
+
+    return;
+  }
+
+  showMessage(
+    "resetMsg",
+    "Password updated successfully! 🎉"
+  );
+
+}
+
+
+/* CHAT */
+
+async function setupChat(){
+
+  if(!currentUser){
+
+    document.getElementById(
+      "chatLoginMessage"
+    ).classList.remove("hidden");
+
+    document.getElementById(
+      "chatArea"
+    ).classList.add("hidden");
+
+    return;
+  }
+
+  document.getElementById(
+    "chatLoginMessage"
+  ).classList.add("hidden");
+
+  document.getElementById(
+    "chatArea"
+  ).classList.remove("hidden");
+
+  await loadChatUsers();
+
+  subscribeToMessages();
+
+}
+
+
+async function loadChatUsers(){
+
+  const {data,error} =
     await supabaseClient
-    .from("messages")
-    .insert({
-      sender_id:user.id,
-      receiver_id:currentReceiver,
-      message:text
-    });
+      .from("profiles")
+      .select("*")
+      .neq("id",currentUser.id)
+      .order("name");
+
+  const box =
+    document.getElementById(
+      "chatUsers"
+    );
+
+  if(error){
+
+    box.innerHTML =
+      `<small>${escapeHtml(error.message)}</small>`;
+
+    return;
+  }
+
+  if(!data?.length){
+
+    box.innerHTML =
+      `<small>No other users yet.</small>`;
+
+    return;
+  }
+
+  box.innerHTML =
+    data.map(user => `
+
+      <button
+        class="chat-user"
+        onclick="selectChatUser('${user.id}')">
+
+        ${escapeHtml(user.name)}
+
+      </button>
+
+    `).join("");
+
+}
+
+
+/* SELECT CHAT USER */
+
+async function selectChatUser(id){
+
+  const {data} =
+    await supabaseClient
+      .from("profiles")
+      .select("*")
+      .eq("id",id)
+      .single();
+
+  if(!data) return;
+
+  selectedChatUser = data;
+
+  document.getElementById(
+    "chatTitle"
+  ).innerHTML =
+    `<h3>
+      Chat with ${escapeHtml(data.name)}
+    </h3>`;
+
+  await loadMessages();
+
+}
+
+
+/* START CHAT */
+
+function startChat(id){
+
+  if(!currentUser){
+
+    showPage("login");
+
+    return;
+  }
+
+  showPage("chat");
+
+  setTimeout(
+    () => selectChatUser(id),
+    300
+  );
+
+}
+
+
+/* LOAD MESSAGES */
+
+async function loadMessages(){
+
+  if(!selectedChatUser) return;
+
+  const {data,error} =
+    await supabaseClient
+      .from("messages")
+      .select("*")
+      .or(
+        `and(sender_id.eq.${currentUser.id},receiver_id.eq.${selectedChatUser.id}),and(sender_id.eq.${selectedChatUser.id},receiver_id.eq.${currentUser.id})`
+      )
+      .order(
+        "created_at",
+        {ascending:true}
+      );
+
+  const box =
+    document.getElementById(
+      "messages"
+    );
+
+  if(error){
+
+    box.innerHTML =
+      `<p>${escapeHtml(error.message)}</p>`;
+
+    return;
+  }
+
+  box.innerHTML = "";
+
+  if(!data?.length){
+
+    box.innerHTML =
+      `<p class="center">
+        No messages yet 👋
+      </p>`;
+
+    return;
+  }
+
+  data.forEach(m => {
+
+    const div =
+      document.createElement("div");
+
+    div.className =
+      "bubble " +
+      (
+        m.sender_id === currentUser.id
+          ? "mine"
+          : ""
+      );
+
+    div.textContent =
+      m.message;
+
+    box.appendChild(div);
+
+  });
+
+  box.scrollTop =
+    box.scrollHeight;
+
+}
+
+
+/* SEND MESSAGE */
+
+async function sendMessage(){
+
+  if(!currentUser ||
+     !selectedChatUser){
+
+    return;
+  }
+
+  const input =
+    document.getElementById(
+      "messageInput"
+    );
+
+  const text =
+    input.value.trim();
+
+  if(!text) return;
+
+  const {error} =
+    await supabaseClient
+      .from("messages")
+      .insert({
+
+        sender_id:currentUser.id,
+
+        receiver_id:
+          selectedChatUser.id,
+
+        message:text
+
+      });
 
   if(error){
 
     alert(error.message);
+
     return;
   }
+
+  input.value = "";
+
+  await loadMessages();
+
+}
+
+
+/* REALTIME */
+
+function subscribeToMessages(){
+
+  if(!currentUser) return;
+
+  if(messageSubscription){
+
+    supabaseClient
+      .removeChannel(
+        messageSubscription
+      );
+
+  }
+
+  messageSubscription =
+    supabaseClient
+      .channel(
+        "nexa-messages"
+      )
+      .on(
+        "postgres_changes",
+        {
+          event:"INSERT",
+          schema:"public",
+          table:"messages"
+        },
+        () => {
+
+          if(selectedChatUser){
+
+            loadMessages();
+
+          }
+
+        }
+      )
+      .subscribe();
+
+}
+
+
+/* AUTH */
+
+supabaseClient.auth
+.onAuthStateChange(
+  async (event,session) => {
+
+    currentUser =
+      session?.user || null;
+
+    updateNavigation();
+
+    if(event === "PASSWORD_RECOVERY"){
+
+      showPage("reset");
+
+      return;
+    }
+
+    if(currentUser){
+
+      await ensureProfile(
+        currentUser
+      );
+
+    }
+
+  }
+);
+
+
+/* START */
+
+async function init(){
+
+  const {data} =
+    await supabaseClient.auth
+      .getSession();
+
+  currentUser =
+    data.session?.user || null;
+
+  updateNavigation();
+
+  if(currentUser){
+
+    await ensureProfile(
+      currentUser
+    );
+
+  }
+
+  if(
+    window.location.hash === "#reset"
+  ){
+
+    showPage("reset");
+
+  }else{
+
+    showPage("home");
+
+  }
+
+}
+
+init();
+
+</script>
+
+</body>
+</html>
